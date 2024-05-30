@@ -38,9 +38,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	clientIP := getClientIP(r)
 
 	hostname, err := getReverseDNS(clientIP)
-	if err != nil {
-		http.Error(w, "Unable to perform reverse DNS lookup", http.StatusInternalServerError)
-		return
+	if err != nil || hostname == "No PTR record found" {
+		hostname = "Unable to perform reverse DNS lookup"
 	}
 
 	html := fmt.Sprintf(`
