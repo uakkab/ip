@@ -30,17 +30,14 @@ func getReverseDNS(ip string) (string, error) {
 	if len(names) > 0 {
 		return names[0], nil
 	}
-	return "No PTR record found", nil
+	return "", fmt.Errorf("No PTR record found")
 }
 
-// handler handles HTTP requests and responds with the client's IP address and hostname
+// handler handles HTTP requests and responds with the client's IP address and hostname if available
 func handler(w http.ResponseWriter, r *http.Request) {
 	clientIP := getClientIP(r)
 
 	hostname, err := getReverseDNS(clientIP)
-	if err != nil || hostname == "No PTR record found" {
-		hostname = "Unable to perform reverse DNS lookup"
-	}
 
 	html := fmt.Sprintf(`
 		<!DOCTYPE html>
@@ -67,12 +64,18 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		</head>
 		<body>
 			<h1>Your Public IP Address is:</h1>
-			<h2>%s</h2>
+			<h2>%s</h2>`, clientIP)
+
+	if err == nil {
+		html += fmt.Sprintf(`
 			<h1>Hostname:</h1>
-			<h2>%s</h2>
+			<h2>%s</h2>`, hostname)
+	}
+
+	html += `
 		</body>
 		</html>
-	`, clientIP, hostname)
+	`
 	fmt.Fprint(w, html)
 }
 
