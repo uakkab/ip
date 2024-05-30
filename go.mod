@@ -1,3 +1,3 @@
-module my-go-ip-project
+module iphost
 
 go 1.18
