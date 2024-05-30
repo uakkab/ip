@@ -1,8 +1,8 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"log"
 	"net"
 	"net/http"
 	"os/exec"
@@ -76,8 +76,10 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, html)
 }
 
+func HandleRequest(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	handler(w, r)
+}
+
 func main() {
-	http.HandleFunc("/", handler)
-	fmt.Println("Server is running")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	bridge.Start(HandleRequest)
 }
