@@ -63,8 +63,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			</style>
 		</head>
 		<body>
-			<h1>Your Public IP Address is:</h1>
-			<h2>%s</h2>`, clientIP)
+			<h2>Public IP Address</h2>
+			<h1>%s</h1>`, clientIP)
 
 	if err == nil {
 		html += fmt.Sprintf(`
