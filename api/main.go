@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+// getClientIP extracts the client's IP address from the request headers
 func getClientIP(r *http.Request) string {
 	// Try to get the IP from the X-Forwarded-For header (in case the request passed through a proxy)
 	forwarded := r.Header.Get("X-Forwarded-For")
@@ -20,6 +21,7 @@ func getClientIP(r *http.Request) string {
 	return ip
 }
 
+// getReverseDNS performs a reverse DNS lookup on the given IP address
 func getReverseDNS(ip string) (string, error) {
 	names, err := net.LookupAddr(ip)
 	if err != nil {
@@ -31,6 +33,7 @@ func getReverseDNS(ip string) (string, error) {
 	return "No PTR record found", nil
 }
 
+// handler handles HTTP requests and responds with the client's IP address and hostname
 func handler(w http.ResponseWriter, r *http.Request) {
 	clientIP := getClientIP(r)
 
@@ -74,6 +77,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, html)
 }
 
+// HandleRequest is the entry point for Vercel
 func HandleRequest(w http.ResponseWriter, r *http.Request) {
 	handler(w, r)
 }
