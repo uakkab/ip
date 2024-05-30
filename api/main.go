@@ -1,8 +1,8 @@
 package main
 
 import (
-	"context"
 	"fmt"
+	"log"
 	"net"
 	"net/http"
 	"os/exec"
@@ -43,43 +43,41 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	html := fmt.Sprintf(`
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>IP Address</title>
-            <style>
-                body {
-                    font-family: Arial, sans-serif;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    height: 100vh;
-                    margin: 0;
-                    flex-direction: column;
-                    text-align: center;
-                }
-                h1, h2 {
-                    margin: 10px 0;
-                }
-            </style>
-        </head>
-        <body>
-            <h1>Your Public IP Address is:</h1>
-            <h2>%s</h2>
-            <h1>Hostname:</h1>
-            <h2>%s</h2>
-        </body>
-        </html>
-    `, ip, hostname)
+		<!DOCTYPE html>
+		<html lang="en">
+		<head>
+			<meta charset="UTF-8">
+			<meta name="viewport" content="width=device-width, initial-scale=1.0">
+			<title>IP Address</title>
+			<style>
+				body {
+					font-family: Arial, sans-serif;
+					display: flex;
+					justify-content: center;
+					align-items: center;
+					height: 100vh;
+					margin: 0;
+					flex-direction: column;
+					text-align: center;
+				}
+				h1, h2 {
+					margin: 10px 0;
+				}
+			</style>
+		</head>
+		<body>
+			<h1>Your Public IP Address is:</h1>
+			<h2>%s</h2>
+			<h1>Hostname:</h1>
+			<h2>%s</h2>
+		</body>
+		</html>
+	`, ip, hostname)
 	fmt.Fprint(w, html)
 }
 
-func HandleRequest(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-	handler(w, r)
-}
-
 func main() {
-	bridge.Start(HandleRequest)
+	http.HandleFunc("/", handler)
+	fmt.Println("Server is running")
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
