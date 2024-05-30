@@ -1,20 +1,23 @@
-package handler
+package main
 
 import (
 	"fmt"
 	"net"
 	"net/http"
-	"os/exec"
 	"strings"
 )
 
-func getPublicIP() (string, error) {
-	cmd := exec.Command("curl", "ifconfig.me")
-	out, err := cmd.Output()
-	if err != nil {
-		return "", err
+func getClientIP(r *http.Request) string {
+	// Try to get the IP from the X-Forwarded-For header (in case the request passed through a proxy)
+	forwarded := r.Header.Get("X-Forwarded-For")
+	if forwarded != "" {
+		ips := strings.Split(forwarded, ",")
+		return strings.TrimSpace(ips[0])
 	}
-	return strings.TrimSpace(string(out)), nil
+
+	// Fallback to the remote address
+	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
+	return ip
 }
 
 func getReverseDNS(ip string) (string, error) {
@@ -29,13 +32,9 @@ func getReverseDNS(ip string) (string, error) {
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	ip, err := getPublicIP()
-	if err != nil {
-		http.Error(w, "Unable to get public IP", http.StatusInternalServerError)
-		return
-	}
+	clientIP := getClientIP(r)
 
-	hostname, err := getReverseDNS(ip)
+	hostname, err := getReverseDNS(clientIP)
 	if err != nil {
 		http.Error(w, "Unable to perform reverse DNS lookup", http.StatusInternalServerError)
 		return
@@ -71,7 +70,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			<h2>%s</h2>
 		</body>
 		</html>
-	`, ip, hostname)
+	`, clientIP, hostname)
 	fmt.Fprint(w, html)
 }
 
